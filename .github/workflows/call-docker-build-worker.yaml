@@ -56,7 +56,7 @@ jobs:
       ### REQUIRED set rules for tagging images, based on special action syntax:
       ### https://github.com/docker/metadata-action#tags-input
       ### defaults to:
-      tag-ruless: |
+      tag-rules: |
         type=schedule,pattern={{date 'YYYYMMDDhhmm'}}
       
       ### path to where docker should copy files into image
