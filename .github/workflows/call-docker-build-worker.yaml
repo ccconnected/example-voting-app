@@ -3,7 +3,7 @@ env:
     REGISTRY_HOST: "ghcr.io"
     REPO_OWNER: ${{ github.repository }}
     IMAGE_NAME: "example-voting-app-worker"
-    IMAGE_TAG: $(date +'%Y%m%d%H%M')
+    IMAGE_TAG: ${GITHUB_SHA}
   
 name: Build and Scan Worker
 
@@ -57,7 +57,7 @@ jobs:
       ### https://github.com/docker/metadata-action#tags-input
       ### defaults to:
       tag-rules: |
-        type=schedule,pattern={{date 'YYYYMMDDhhmm'}}
+        type=sha,format=long
       
       ### path to where docker should copy files into image
       ### defaults to root of repository (.)
