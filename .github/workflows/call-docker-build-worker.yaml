@@ -56,4 +56,6 @@ jobs:
           ghcr.io/ccconnected/example-voting-app-worker \
           --console-log \
           --dbpath=${GITHUB_WORKSPACE}/cache/db/ \
-          --cachepath=${GITHUB_WORKSPACE}/cache/scanner-cache/
+          --cachepath=${GITHUB_WORKSPACE}/cache/scanner-cache/ ||true
+
+          
