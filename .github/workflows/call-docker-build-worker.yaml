@@ -1,9 +1,9 @@
 env:
     SYSDIG_SECURE_ENDPOINT: "https://app.us4.sysdig.com/"
     REGISTRY_HOST: "ghcr.io"
-    REPO_OWNER: "ccconnected"
+    REPO_OWNER: ${{ github.repository }}
     IMAGE_NAME: "example-voting-app-worker"
-    IMAGE_TAG: $(date +'%Y%m%d%H%M%S')
+    IMAGE_TAG: ${{ github.sha }}
   
 name: Build and Scan Worker
 
@@ -57,7 +57,7 @@ jobs:
       ### https://github.com/docker/metadata-action#tags-input
       ### defaults to:
       tag-rules: |
-        type=raw,value=$IMAGE_TAG
+        ${{ env.IMAGE_TAG }}
       
       ### path to where docker should copy files into image
       ### defaults to root of repository (.)
@@ -106,7 +106,7 @@ jobs:
       run: |
         ${GITHUB_WORKSPACE}/cache/sysdig-cli-scanner \
           --apiurl ${SYSDIG_SECURE_ENDPOINT} \
-          ${REGISTRY_HOST}/${REPO_OWNER}/${IMAGE_NAME}:$IMAGE_TAG \
+          ${REGISTRY_HOST}/${REPO_OWNER}/${IMAGE_NAME}:${{ env.IMAGE_TAG }} \
           --console-log \
           --dbpath=${GITHUB_WORKSPACE}/cache/db/ \
           --cachepath=${GITHUB_WORKSPACE}/cache/scanner-cache/ ||true
