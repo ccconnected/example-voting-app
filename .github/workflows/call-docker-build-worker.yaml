@@ -1,11 +1,10 @@
 env:
     SYSDIG_SECURE_ENDPOINT: "https://app.us4.sysdig.com/"
     REGISTRY_HOST: "ghcr.io"
-    REPO_OWNER: ${{ github.repository }}
     IMAGE_NAME: "example-voting-app-worker"
-    IMAGE_TAG: ${GITHUB_WORKFLOW_SHA}
+    IMAGE_TAG: "latest"
   
-name: Build and Scan Worker
+name: Build, Push and Scan Worker
 
 on:
   # we want pull requests so we can build(test) but not push to image registry
@@ -24,11 +23,9 @@ on:
       - 'worker/**'
       #- '.github/workflows/call-docker-build-worker.yaml'
 
+###################################################################################################################
 jobs:
-#############################
-  call-docker-build:
-
-    name: Worker Call Docker Build
+  call-docker-build-push:
     
     uses: dockersamples/.github/.github/workflows/reusable-docker-build.yaml@main
 
@@ -57,7 +54,10 @@ jobs:
       ### https://github.com/docker/metadata-action#tags-input
       ### defaults to:
       tag-rules: |
-        type=raw,value={{sha}}
+        type=raw,value=latest,enable=${{ endsWith(github.ref, github.event.repository.default_branch) }}
+        type=raw,value=before,enable=${{ endsWith(github.ref, github.event.repository.default_branch) }}
+        type=raw,value=after,enable=${{ endsWith(github.ref, github.event.repository.default_branch) }}
+        type=ref,event=pr
       
       ### path to where docker should copy files into image
       ### defaults to root of repository (.)
@@ -74,10 +74,8 @@ jobs:
       # FIXME worker arm/v7 support doesn't build in .net core 3.1 with QEMU
       # a fix would likely run the .net build on amd64 but with a target of arm/v7
       #platforms: linux/amd64,linux/arm64,linux/arm/v7
-
-
-##############################
-  scan:
+###################################################################################################################
+  sysdig-cli-scanner:
     runs-on: ubuntu-latest
     steps:
     
@@ -99,16 +97,13 @@ jobs:
         else
           echo "sysdig-cli-scanner latest version already downloaded"
         fi
-
     - name: Scan the image using sysdig-cli-scanner
       env:
         SECURE_API_TOKEN: ${{ secrets.SECURE_API_TOKEN }}
       run: |
         ${GITHUB_WORKSPACE}/cache/sysdig-cli-scanner \
           --apiurl ${SYSDIG_SECURE_ENDPOINT} \
-          ${REGISTRY_HOST}/${REPO_OWNER}/${IMAGE_NAME}:${IMAGE_TAG} \
+          ghcr.io/ccconnected/example-voting-app-worker \
           --console-log \
           --dbpath=${GITHUB_WORKSPACE}/cache/db/ \
           --cachepath=${GITHUB_WORKSPACE}/cache/scanner-cache/ ||true
-
-          
