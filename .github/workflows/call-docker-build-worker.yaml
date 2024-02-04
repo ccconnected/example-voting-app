@@ -5,7 +5,7 @@ env:
     IMAGE_NAME: "example-voting-app-worker"
     IMAGE_TAG: "$(date +'%Y%m%d%H%M%S')"
   
-name: Worker scan 
+name: Build and Scan Worker
 
 on:
   # we want pull requests so we can build(test) but not push to image registry
