@@ -4,7 +4,7 @@ env:
     IMAGE_NAME: "example-voting-app-worker"
     IMAGE_TAG: "latest"
   
-name: Container scan 
+name: Worker scan 
 
 on:
   # we want pull requests so we can build(test) but not push to image registry
