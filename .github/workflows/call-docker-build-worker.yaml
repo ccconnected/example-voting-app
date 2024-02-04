@@ -3,7 +3,7 @@ env:
     REGISTRY_HOST: "ghcr.io"
     REPO_OWNER: ${{ github.repository }}
     IMAGE_NAME: "example-voting-app-worker"
-    IMAGE_TAG: $(date +'%Y%m%d')
+    IMAGE_TAG: $(date +'%Y%m%d%H%M')
   
 name: Build and Scan Worker
 
@@ -56,8 +56,8 @@ jobs:
       ### REQUIRED set rules for tagging images, based on special action syntax:
       ### https://github.com/docker/metadata-action#tags-input
       ### defaults to:
-      tags: |
-        type=raw,value={{date 'YYYYMMDD'}}
+      tag-ruless: |
+        type=schedule,pattern={{date 'YYYYMMDDhhmm'}}
       
       ### path to where docker should copy files into image
       ### defaults to root of repository (.)
