@@ -3,7 +3,7 @@ env:
     REGISTRY_HOST: "ghcr.io"
     REPO_OWNER: "ccconnected"
     IMAGE_NAME: "example-voting-app-worker"
-    IMAGE_TAG: "$(date +'%Y%m%d%H%M%S')"
+    IMAGE_TAG: "$('%Y%m%d%H%M%S')"
   
 name: Build and Scan Worker
 
