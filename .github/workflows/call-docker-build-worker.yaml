@@ -1,8 +1,9 @@
 env:
     SYSDIG_SECURE_ENDPOINT: "https://app.us4.sysdig.com/"
     REGISTRY_HOST: "ghcr.io"
+    REPO_OWNER: "ccconnected"
     IMAGE_NAME: "example-voting-app-worker"
-    IMAGE_TAG: "latest"
+    IMAGE_TAG: "$(date +'%Y%m%d%H%M%S')"
   
 name: Worker scan 
 
@@ -24,6 +25,58 @@ on:
       #- '.github/workflows/call-docker-build-worker.yaml'
 
 jobs:
+#############################
+  call-docker-build:
+
+    name: Worker Call Docker Build
+    
+    uses: dockersamples/.github/.github/workflows/reusable-docker-build.yaml@main
+
+    permissions:
+      contents: read
+      packages: write # needed to push docker image to ghcr.io
+      pull-requests: write # needed to create and update comments in PRs
+
+
+    with:
+      
+      ### REQUIRED
+      ### ENABLE ONE OR BOTH REGISTRIES
+      ### tell docker where to push.
+      ### NOTE if Docker Hub is set to true, you must set secrets above and also add account/repo/tags below
+      #dockerhub-enable: true
+      ghcr-enable: true
+
+      ### REQUIRED 
+      ### A list of the account/repo names for docker build. List should match what's enabled above
+      ### defaults to:
+      image-names: |
+        ${REGISTRY_HOST}/${REPO_OWNER}/${IMAGE_NAME}
+      
+      ### REQUIRED set rules for tagging images, based on special action syntax:
+      ### https://github.com/docker/metadata-action#tags-input
+      ### defaults to:
+      tag-rules: |
+        type=schedule,pattern=${IMAGE_TAG}
+      
+      ### path to where docker should copy files into image
+      ### defaults to root of repository (.)
+      context: worker
+      
+      ### Dockerfile alternate name. Default is Dockerfile (relative to context path)
+      # file: Containerfile
+
+      ### build stage to target, defaults to empty, which builds to last stage in Dockerfile
+      # target:
+      
+      ### platforms to build for, defaults to linux/amd64
+      ### other options: linux/amd64,linux/arm64,linux/arm/v7
+      # FIXME worker arm/v7 support doesn't build in .net core 3.1 with QEMU
+      # a fix would likely run the .net build on amd64 but with a target of arm/v7
+      #platforms: linux/amd64,linux/arm64,linux/arm/v7
+
+
+##############################
   build-scan-and-push:
     runs-on: ubuntu-latest
     steps:
@@ -53,7 +106,7 @@ jobs:
       run: |
         ${GITHUB_WORKSPACE}/cache/sysdig-cli-scanner \
           --apiurl ${SYSDIG_SECURE_ENDPOINT} \
-          ghcr.io/ccconnected/example-voting-app-worker \
+          ${REGISTRY_HOST}/${REPO_OWNER}/${IMAGE_NAME}:${IMAGE_TAG} \
           --console-log \
           --dbpath=${GITHUB_WORKSPACE}/cache/db/ \
           --cachepath=${GITHUB_WORKSPACE}/cache/scanner-cache/ ||true
